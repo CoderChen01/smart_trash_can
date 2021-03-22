@@ -25,7 +25,7 @@ ch.setFormatter(formater)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
-serial_controler = BaseSerialControler('/dev/ttyUSB0', 115200, timeout=0.5, logger=logger)
+serial_controler = BaseSerialControler('/dev/ttyUSB0', 115200, timeout=3, logger=logger)
 
 class MySmartCan(SmartCan):
     def to_switch(self, class_id):
