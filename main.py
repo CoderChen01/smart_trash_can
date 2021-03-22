@@ -33,8 +33,7 @@ class MySmartCan(SmartCan):
         retval = serial_controler.read_line_json()
         if not retval:
             return False
-        print(retval)
-        return True
+        return retval
 
 
 can = MySmartCan(10, detected_num=2, display_interval=1)

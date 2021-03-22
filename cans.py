@@ -159,6 +159,16 @@ class SmartCan(BaseSamartCan):
                 continue
             class_id = str(class_num.index(max_num))
             logger.info('SmartCan._handler: %s', 'class is ' + class_id)
-            while not self.to_switch(class_id.encode('utf8')):
-                pass
+            retval = self.to_switch(class_id.encode('utf8'))
             class_num = [0] * class_list_len
+            # Load testing
+            if not retval:
+                continue
+            current_class_id = retval['class_id']
+            class_distance = retval['id_distance']
+            if class_distance / configs.HEIGHT >= 0.75:
+                logger.info('SmartCan._handler: %s', '{id} can is full'.format(id=current_class_id))
+                pass
+
+
+

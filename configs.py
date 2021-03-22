@@ -17,3 +17,5 @@ PREDICT_LABELS = [
     '未检测到垃圾'
 ]
 LOGGER_NAME = 'monitor'
+HEIGHT = 100
+HEIGHT_THRESHOLD = 0.75
