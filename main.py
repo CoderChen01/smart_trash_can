@@ -26,5 +26,5 @@ class MySmartCan(SmartCan):
         print(class_id)
         return True
 
-can = MySmartCan(10)
+can = MySmartCan(10, display_interval=1)
 d, h = can.run()
