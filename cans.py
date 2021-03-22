@@ -106,7 +106,7 @@ class BaseSamartCan:
                 counter = 0
             else:
                 counter += 1
-            cv2.waitKey(self.inspection_interval)
+            cv2.waitKey(self.inspection_interval * 1000)
             # time.sleep(self.inspection_interval)
 
     def to_switch(self, class_id):
@@ -157,7 +157,8 @@ class SmartCan(BaseSamartCan):
             max_num = max(class_num)
             if max_num < self.detected_num:
                 continue
-            class_id = class_num.index(max_num)
-            while not self.to_switch(class_id):
+            class_id = str(class_num.index(max_num))
+            logger.info('SmartCan._handler: %s', 'class is ' + class_id)
+            while not self.to_switch(class_id.encode('utf8')):
                 pass
             class_num = [0] * class_list_len
