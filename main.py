@@ -29,13 +29,13 @@ serial_controler = BaseSerialControler('/dev/ttyUSB0', 115200, timeout=0.5, logg
 
 class MySmartCan(SmartCan):
     def to_switch(self, class_id):
-        # ser = serial.Serial('/dev/ttyUSB0', 9600, timeout=0.5)
-        # ser.write(class_id)
         serial_controler.send_data(class_id)
-        print(serial_controler.read_line())
-        # retjson = json.loads(serial_controler.read_line())
-        # print(retjson)
+        retval = serial_controler.read_line_json()
+        if not retval:
+            return False
+        print(retval)
         return True
+
 
 can = MySmartCan(10, detected_num=2, display_interval=1)
 d, h = can.run()
