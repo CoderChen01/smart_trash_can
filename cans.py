@@ -31,7 +31,6 @@ class BaseSamartCan:
                  detected_num=5,
                  display_interval=2,
                  infer='paddlelite_infer'):
-        self.restoration()
         self.infer = infer
         self.all_time = all_time * 60
         self.inspection_interval = inspection_interval
@@ -106,14 +105,6 @@ class BaseSamartCan:
     def to_switch(class_id):
         raise NotImplementedError('You must implement to_switch method')
 
-    @staticmethod
-    def restoration():
-        raise NotImplementedError('You must implement restoration method')
-
-    @staticmethod
-    def rotate_cap():
-        raise NotImplementedError('You must implement rotate_cap method')
-
     def _run_can(self):
         self.set_run_status(True)
         d = mp.Process(target=self._detector)
@@ -144,14 +135,6 @@ class SmartCan(BaseSamartCan):
     def to_switch(class_id):
         raise NotImplementedError('You must implement to_switch method')
 
-    @staticmethod
-    def restoration():
-        raise NotImplementedError('You must implement restoration method')
-
-    @staticmethod
-    def rotate_cap(is_open):
-        raise NotImplementedError('You must implement rotate_cap method')
-
     def _handler(self):
         detected_num = 0
         class_list_len = len(configs.PREDICT_LABELS)
@@ -170,9 +153,5 @@ class SmartCan(BaseSamartCan):
                 continue
             class_id = class_num.index(max_num)
             while not self.to_switch(class_id):
-                pass
-            while not self.rotate_cap(True):
-                pass
-            while not self.rotate_cap(False):
                 pass
             class_num = [0] * class_list_len
