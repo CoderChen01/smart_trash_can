@@ -55,30 +55,37 @@ class BaseSerialControler:
     def read_line(self):
         return self.main_engine.readline()
 
+    def read_line_json(self):
+        data = self.read_line()
+        if data:
+            return json.loads(data)
+        return None
+
     def send_data(self, data):
         self.main_engine.write(data)
 
     def recive_data(self, is_all):
-        self.logger.info('BaseSerialControler.recive_data: %s', 'receving data...')
-        while True:
-            try:
-                if self.main_engine.in_waiting:
-                    if not is_all:
-                        for i in range(self.main_engine.in_waiting):
-                            print("接收ascii数据：" + str(self.read_size(1)))
-                            data1 = self.read_size(1).hex()
-                            data2 = int(data1, 16)
-                            if data2 == "exit":
-                                break
-                            else:
-                                print("收到数据十六进制：" + data1 + " 收到数据十进制：" + str(data2))
-                    else:
-                        # 整体接收
-                        # data = self.main_engine.read(self.main_engine.in_waiting).decode("utf-8")#方式一
-                        data = self.main_engine.read_all()  # 方式二
-                        if data == "exit":  # 退出标志
-                            break
-                        else:
-                            print("接收ascii数据：", data)
-            except Exception as e:
-                print("异常报错：", e)
+        # self.logger.info('BaseSerialControler.recive_data: %s', 'receving data...')
+        # while True:
+        #     try:
+        #         if self.main_engine.in_waiting:
+        #             if not is_all:
+        #                 for i in range(self.main_engine.in_waiting):
+        #                     print("接收ascii数据：" + str(self.read_size(1)))
+        #                     data1 = self.read_size(1).hex()
+        #                     data2 = int(data1, 16)
+        #                     if data2 == "exit":
+        #                         break
+        #                     else:
+        #                         print("收到数据十六进制：" + data1 + " 收到数据十进制：" + str(data2))
+        #             else:
+        #                 # 整体接收
+        #                 # data = self.main_engine.read(self.main_engine.in_waiting).decode("utf-8")#方式一
+        #                 data = self.main_engine.read_all()  # 方式二
+        #                 if data == "exit":  # 退出标志
+        #                     break
+        #                 else:
+        #                     print("接收ascii数据：", data)
+        #     except Exception as e:
+        #         print("异常报错：", e)
+        pass
