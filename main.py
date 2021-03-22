@@ -1,5 +1,4 @@
 import logging
-from uuid import uuid4
 
 import configs
 from cans import SmartCan
@@ -22,5 +21,10 @@ ch.setFormatter(formater)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
-can = SmartCan(10)
-ld, lh = can.run()
+class MySmartCan(SmartCan):
+    def to_switch(self, class_id):
+        print(class_id)
+        return True
+
+can = MySmartCan(10)
+d, h = can.run()

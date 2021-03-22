@@ -6,6 +6,7 @@ import importlib
 import multiprocessing as mp
 
 import cv2
+import numpy as np
 
 import configs
 from tools import draw_image
@@ -69,7 +70,7 @@ class BaseSamartCan:
         logger.info('SmartCan._detector: %s',
                     'Start detecting...')
         counter = 0
-        cv2.nameWindow('display', cv2.WINDOW_NORMAL)
+        cv2.namedWindow('display', cv2.WINDOW_NORMAL)
         while True:
             if time.time() - start_time >= self.all_time:
                 capture.release()
@@ -94,15 +95,21 @@ class BaseSamartCan:
                 logger.debug('SmartCan._detector: %s',
                              'displaying...')
                 color = (0, 255, 0)
-                display_image = draw_image(frame, result['text'], color)
+                display_image = draw_image(frame,
+                                           '{class_id} {text} {class_num} OK'
+                                           .format(class_id=result['class_id'],
+                                                   text=result['text'],
+                                                   class_num=1),
+                                           color)
+                display_image = cv2.cvtColor(np.asarray(display_image), cv2.COLOR_RGB2BGR)
                 cv2.imshow('display', display_image)
                 counter = 0
             else:
                 counter += 1
-            time.sleep(self.inspection_interval)
+            cv2.waitKey(self.inspection_interval)
+            # time.sleep(self.inspection_interval)
 
-    @staticmethod
-    def to_switch(class_id):
+    def to_switch(self, class_id):
         raise NotImplementedError('You must implement to_switch method')
 
     def _run_can(self):
@@ -131,8 +138,7 @@ class SmartCan(BaseSamartCan):
     def run(self):
         return self._run_can()
 
-    @staticmethod
-    def to_switch(class_id):
+    def to_switch(self, class_id):
         raise NotImplementedError('You must implement to_switch method')
 
     def _handler(self):
@@ -147,7 +153,7 @@ class SmartCan(BaseSamartCan):
             if not self.get_run_status():
                 return
             result = self.shared_queue.get()
-            class_num[result['class_id']] += 1
+            class_num[result] += 1
             max_num = max(class_num)
             if max_num < self.detected_num:
                 continue
