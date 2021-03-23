@@ -29,7 +29,7 @@ class BaseSamartCan:
 
     def _handle_result(self):
         for result in self._handler():
-            print(result)
+            print(result['text'], ' is current can full: ' + result['is_full'])
 
     def _provider(self):  # get pictures in real time
         start_time = time.time()
