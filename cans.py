@@ -130,7 +130,7 @@ class SmartCan(BaseSamartCan):
             if count == self.display_interval:
                 text = '{id}  {class_name}  {num}  OK'.format(id=class_id, class_name=text, num=1)
                 img = draw_image(frame, text, (0, 255, 0))
-                cv2.cvtColor(np.asarray(img), cv2.COLOR_BGR2RGB)
+                img = cv2.cvtColor(np.asarray(img), cv2.COLOR_BGR2RGB)
                 cv2.imshow('display', img)
                 count = 0
             else:
