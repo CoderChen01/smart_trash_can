@@ -16,6 +16,6 @@ PREDICT_LABELS = [
     '有害垃圾',
     '未检测到垃圾'
 ]
-LOGGER_NAME = 'monitor'
+LOGGER_NAME = 'smartcan'
 HEIGHT = 100
 HEIGHT_THRESHOLD = 0.75
