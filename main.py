@@ -22,16 +22,16 @@ ch.setFormatter(formater)
 logger.addHandler(fh)
 logger.addHandler(ch)
 
-# serial_controler = BaseSerialControler('/dev/ttyUSB0', 115200, timeout=3, logger=logger)
+serial_controler = BaseSerialControler('/dev/ttyUSB0', 115200, timeout=0.5, logger=logger)
 
 class MySmartCan(BaseSamartCan):
     def to_switch(self, class_id):
-        # serial_controler.send_data(class_id)
-        # retval = serial_controler.read_line_json()
-        # if not retval:
-        return False
-        # return retval
+        serial_controler.send_data(class_id)
+        retval = serial_controler.read_line_json()
+        if not retval:
+            return False
+        return retval
 
 
-can = MySmartCan(10, detected_num=3, inspection_interval=0)
-d, h = can.run()
+can = MySmartCan(10, detected_num=20, inspection_interval=0)
+can.run()

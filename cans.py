@@ -1,13 +1,10 @@
 import time
 import logging
 import importlib
-import threading
 
 import cv2
-import numpy as np
 
 import configs
-from tools import draw_image
 
 
 logger = logging.getLogger(configs.LOGGER_NAME)
@@ -31,12 +28,8 @@ class BaseSamartCan:
         self._handle_result()
 
     def _handle_result(self):
-        cv2.namedWindow('display', cv2.WINDOW_NORMAL)
         for result in self._handler():
-            # display image
-            cv2.imshow('display', result['frame'])
-            cv2.waitKey(1)
-            print(result['text'], result['is_full'])
+            print(result)
 
     def _provider(self):  # get pictures in real time
         start_time = time.time()
@@ -55,7 +48,7 @@ class BaseSamartCan:
             if not retval:
                 logger.warning('BaseSamartCan._provider: %s',
                                'No frame was read')
-                continue
+                break
             yield frame
             time.sleep(self.inspection_interval)
 
@@ -64,8 +57,6 @@ class BaseSamartCan:
         class_list_len = len(configs.PREDICT_LABELS)
         class_num = [0] * class_list_len
         start_time = time.time()
-        cv2.namedWindow('display', cv2.WINDOW_NORMAL)
-        # start handling
         logger.info('SmartCan._handler: %s', 'start handling images...')
         for frame in self._provider():
             # predict image
@@ -93,9 +84,11 @@ class BaseSamartCan:
                 continue
             current_class_id = retval['class_id']
             class_distance = retval['id_distance']
+            logger.info(('BaseSmartCan._handler: distance is %d', class_distance))
             if class_distance / configs.HEIGHT >= configs.HEIGHT_THRESHOLD:
                 logger.info('SmartCan._handler: %s', '{id} can is full'.format(id=current_class_id))
                 handle_result['is_full'] = True
+            handle_result['is_full'] = False
             yield handle_result
 
     def get_predictor(self):  # get a trash classifier
