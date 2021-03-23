@@ -7,7 +7,7 @@ CAMERA_FILE = 0
 PADDLE_INFERENCE_MODEL_DIR = os.path.join(BASE_DIR, 'paddle_inference_infer_model')
 PADDLELITE_MODEL = os.path.join(BASE_DIR, 'model.nb')
 IMAGE_FONT = os.path.join(BASE_DIR, 'arialuni.ttf')
-INFER_THRESHOLD = 0.6
+INFER_THRESHOLD = 0.8
 GPIO_POWER_PIN_NUM = 12
 PREDICT_LABELS = [
     '其他垃圾',

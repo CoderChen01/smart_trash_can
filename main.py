@@ -1,7 +1,4 @@
-import json
 import logging
-
-import serial
 
 import configs
 from cans import SmartCan
@@ -36,5 +33,5 @@ class MySmartCan(SmartCan):
         return retval
 
 
-can = MySmartCan(10, detected_num=2, display_interval=1)
+can = MySmartCan(10, detected_num=10, display_interval=1)
 d, h = can.run()

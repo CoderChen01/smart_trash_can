@@ -1,7 +1,5 @@
-import os
 import time
 import logging
-import subprocess
 import importlib
 import multiprocessing as mp
 
@@ -10,19 +8,9 @@ import numpy as np
 
 import configs
 from tools import draw_image
-from gpio_controlers import GPIOControler
+
 
 logger = logging.getLogger(configs.LOGGER_NAME)
-
-
-def check_network():
-    fnull = open(os.devnull, 'w')
-    retval = subprocess.call('ping ' + configs.PING_NETWORK + ' -n 2',
-                             shell=True,
-                             stdout=fnull,
-                             stderr=fnull)
-    fnull.close()
-    return False if retval else True
 
 
 class BaseSamartCan:
@@ -35,17 +23,20 @@ class BaseSamartCan:
         self.infer = infer
         self.all_time = all_time * 60
         self.inspection_interval = inspection_interval
+        # When a certain category is detected 'detected_num' times,
+        # the final judgment is that category
         self.detected_num = detected_num
-        self.shared_queue = mp.Queue()
-        self._is_run = mp.Value('i', 0)
+        self.display_interval = display_interval
+        self.shared_queue = mp.Queue()  # for storing images
+        self._is_run = mp.Value('i', 0)  # for storing runing status
 
-    def run(self):
-        raise NotImplementedError('You must implement run method')
+    def to_switch(self, class_id):  # garbage disposal
+        raise NotImplementedError('You must implement to_switch method')
 
-    def _handler(self):
-        raise NotImplementedError('You must implement _handler method')
+    def run(self):  # run trash can
+        return self._run_can()
 
-    def _detector(self):
+    def get_predictor(self):  # get a trash classifier
         if self.infer == 'paddle_inference_infer':
             infer_module = importlib.import_module(self.infer)
             predictor = infer_module.Detector(configs.PADDLE_INFERENCE_MODEL_DIR)
@@ -53,11 +44,17 @@ class BaseSamartCan:
             infer_module = importlib.import_module(self.infer)
             predictor = infer_module.Detector(configs.PADDLELITE_MODEL)
         else:
-            logger.error('SmartCan._detector: %s',
+            logger.error('SmartCan.get_predictor: %s',
                          'The Infer parameter can only be paddle_inference_infer'
                          ' or paddlelite_infer!')
             self.set_run_status(False)
             return
+        return predictor
+
+    def _handler(self):
+        raise NotImplementedError('You must implement _handler method')
+
+    def _detector(self):  # get pictures in real time
         start_time = time.time()
         capture = cv2.VideoCapture(configs.CAMERA_FILE)
         if not capture.isOpened():
@@ -67,10 +64,6 @@ class BaseSamartCan:
             capture.release()
             self.set_run_status(False)
             return
-        logger.info('SmartCan._detector: %s',
-                    'Start detecting...')
-        counter = 0
-        cv2.namedWindow('display', cv2.WINDOW_NORMAL)
         while True:
             if time.time() - start_time >= self.all_time:
                 capture.release()
@@ -84,33 +77,8 @@ class BaseSamartCan:
                 logger.warning('SmartCan.detector: %s',
                                'No frame was read')
                 continue
-            logger.debug('SmartCan._detector: %s',
-                         'predicting...')
-            result = predictor.predict(frame,
-                                       threshold=configs.INFER_THRESHOLD)
-            logger.debug('SmartCan._detector: %s',
-                         'finished...')
-            self.shared_queue.put(result['class_id'])
-            if counter == 2:
-                logger.debug('SmartCan._detector: %s',
-                             'displaying...')
-                color = (0, 255, 0)
-                display_image = draw_image(frame,
-                                           '{class_id} {text} {class_num} OK'
-                                           .format(class_id=result['class_id'],
-                                                   text=result['text'],
-                                                   class_num=1),
-                                           color)
-                display_image = cv2.cvtColor(np.asarray(display_image), cv2.COLOR_RGB2BGR)
-                cv2.imshow('display', display_image)
-                counter = 0
-            else:
-                counter += 1
-            cv2.waitKey(self.inspection_interval * 1000)
-            # time.sleep(self.inspection_interval)
-
-    def to_switch(self, class_id):
-        raise NotImplementedError('You must implement to_switch method')
+            self.shared_queue.put(frame)
+            time.sleep(self.inspection_interval)
 
     def _run_can(self):
         self.set_run_status(True)
@@ -131,29 +99,44 @@ class BaseSamartCan:
 
     def __del__(self):
         cv2.destroyAllWindows()
-        GPIOControler.close()
 
 
 class SmartCan(BaseSamartCan):
-    def run(self):
-        return self._run_can()
-
     def to_switch(self, class_id):
         raise NotImplementedError('You must implement to_switch method')
 
     def _handler(self):
-        detected_num = 0
+        predictor = self.get_predictor()
+        # initial
+        count = 0
         class_list_len = len(configs.PREDICT_LABELS)
         class_num = [0] * class_list_len
         start_time = time.time()
+        cv2.namedWindow('display', cv2.WINDOW_NORMAL)
+        # start handling
+        logger.info('SmartCan._handler: %s', 'start handling images...')
         while True:
             if time.time() - start_time >= self.all_time:
                 self.set_run_status(False)
                 return
             if not self.get_run_status():
                 return
-            result = self.shared_queue.get()
-            class_num[result] += 1
+            # predict image
+            frame = self.shared_queue.get()
+            result = predictor.predict(frame)
+            class_id = result['class_id']
+            text = result['text']
+            # display image
+            if count == self.display_interval:
+                text = '{id}  {class_name}  {num}  OK'.format(id=class_id, class_name=text, num=1)
+                img = draw_image(frame, text, (0, 255, 0))
+                cv2.cvtColor(np.asarray(img), cv2.COLOR_BGR2RGB)
+                cv2.imshow('display', img)
+                count = 0
+            else:
+                count += 1
+            # handle prediction result
+            class_num[result['class_id']] += 1
             max_num = max(class_num)
             if max_num < self.detected_num:
                 continue
@@ -166,7 +149,7 @@ class SmartCan(BaseSamartCan):
                 continue
             current_class_id = retval['class_id']
             class_distance = retval['id_distance']
-            if class_distance / configs.HEIGHT >= 0.75:
+            if class_distance / configs.HEIGHT >= configs.HEIGHT_THRESHOLD:
                 logger.info('SmartCan._handler: %s', '{id} can is full'.format(id=current_class_id))
                 pass
 
