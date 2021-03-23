@@ -34,13 +34,9 @@ class BaseSamartCan:
         cv2.namedWindow('display', cv2.WINDOW_NORMAL)
         for result in self._handler():
             # display image
-            text = '{id}  {class_name}  {num}  OK'.format(id=result['class_id'],
-                                                          class_name=configs.PREDICT_LABELS[result['class_id']], num=1)
-            img = draw_image(result['frame'], text, (0, 255, 0))
-            img = cv2.cvtColor(np.asarray(img), cv2.COLOR_BGR2RGB)
-            cv2.imshow('display', img)
+            cv2.imshow('display', result['frame'])
             cv2.waitKey(1)
-            print(result)
+            print(result['text'], result['is_full'])
 
     def _provider(self):  # get pictures in real time
         start_time = time.time()
@@ -73,7 +69,7 @@ class BaseSamartCan:
         logger.info('SmartCan._handler: %s', 'start handling images...')
         for frame in self._provider():
             # predict image
-            result = self.predictor.predict(frame)
+            result = self.predictor.predict(frame, configs.INFER_THRESHOLD)
             class_id = result['class_id']
             text = result['text']
             # handle prediction result
