@@ -84,11 +84,13 @@ class BaseSamartCan:
                 continue
             current_class_id = retval['class_id']
             class_distance = retval['id_distance']
-            logger.info(('BaseSmartCan._handler: distance is %d', class_distance))
-            if class_distance / configs.HEIGHT >= configs.HEIGHT_THRESHOLD:
+            logger.info('BaseSmartCan._handler: distance is %d', class_distance)
+            if class_distance / configs.HEIGHT >= configs.HEIGHT_THRESHOLD \
+                and current_class_id != configs.NO_TRASH_ID:
                 logger.info('SmartCan._handler: %s', '{id} can is full'.format(id=current_class_id))
                 handle_result['is_full'] = True
-            handle_result['is_full'] = False
+            else:
+                handle_result['is_full'] = False
             yield handle_result
 
     def get_predictor(self):  # get a trash classifier

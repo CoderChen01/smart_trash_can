@@ -33,5 +33,5 @@ class MySmartCan(BaseSamartCan):
         return retval
 
 
-can = MySmartCan(10, detected_num=20, inspection_interval=0)
+can = MySmartCan(10, detected_num=30, inspection_interval=0)
 can.run()
