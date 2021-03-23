@@ -44,7 +44,7 @@ class BaseSamartCan:
             infer_module = importlib.import_module(self.infer)
             predictor = infer_module.Detector(configs.PADDLELITE_MODEL)
         else:
-            logger.error('SmartCan.get_predictor: %s',
+            logger.error('BaseSamartCan.get_predictor: %s',
                          'The Infer parameter can only be paddle_inference_infer'
                          ' or paddlelite_infer!')
             self.set_run_status(False)
@@ -59,11 +59,12 @@ class BaseSamartCan:
         capture = cv2.VideoCapture(configs.CAMERA_FILE)
         if not capture.isOpened():
             EXIT = -1
-            logger.error('SmartCan._detector: %s',
+            logger.error('BaseSamartCan._detector: %s',
                          'Can\'t turn on the camera')
             capture.release()
             self.set_run_status(False)
             return
+        logger.info('BaseSmartCan._detector: %s', 'start get iamges...')
         while True:
             if time.time() - start_time >= self.all_time:
                 capture.release()
@@ -74,7 +75,7 @@ class BaseSamartCan:
                 return
             retval, frame = capture.read()
             if not retval:
-                logger.warning('SmartCan.detector: %s',
+                logger.warning('BaseSamartCan.detector: %s',
                                'No frame was read')
                 continue
             self.shared_queue.put(frame)
