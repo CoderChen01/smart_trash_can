@@ -3,7 +3,7 @@ import os
 BASE_DIR = os.path.dirname(__file__)
 
 PING_NETWORK = 'www.baidu.com'
-CAMERA_FILE = 0
+CAMERA_FILE = 1
 PADDLE_INFERENCE_MODEL_DIR = os.path.join(BASE_DIR, 'paddle_inference_infer_model')
 PADDLELITE_MODEL = os.path.join(BASE_DIR, 'model.nb')
 IMAGE_FONT = os.path.join(BASE_DIR, 'arialuni.ttf')
