@@ -43,7 +43,7 @@ class MySmartCan(BaseSamartCan):
 
     def handle_result(self):
         for result in self._handler():
-            self.mqtt_client.publish(json.dumps(result))
+            self.mqtt_client.publish(configs.MQTT_PATH,json.dumps(result))
 
 
 can = MySmartCan(999, detected_num=30)
