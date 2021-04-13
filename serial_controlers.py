@@ -1,4 +1,6 @@
 import json
+import time
+
 import serial
 import serial.tools.list_ports
 
@@ -19,9 +21,9 @@ class BaseSerialControler:
 
     def read_line_json(self):
         data = self.read_line()
-        if data:
-            return json.loads(data)
-        return None
+        while not data:
+            data = self.read_line()
+        return json.loads(data)
 
     def send_data(self, data):
         self.main_engine.write(data)

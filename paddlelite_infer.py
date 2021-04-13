@@ -28,13 +28,22 @@ class Detector:
         :param threshold: threshold
         :return: dict
         """
+        _labels = [
+            '_',
+            '有害垃圾',
+            '可回收垃圾',
+            '厨余垃圾',
+            '其他垃圾'
+        ]
         class_id = int(np.where(raw_result == np.max(raw_result))[0])
         if raw_result[class_id] < threshold:
-            return {'class_id': len(configs.PREDICT_LABELS) - 1,
-                    'text': configs.PREDICT_LABELS[-1]}
+            return {'class_id': 0, 'text': configs.PREDICT_LABELS[0]}
+        class_name, object_name = configs.PREDICT_LABELS[class_id].split('/')
         return {
-            'class_id': class_id,
-            'text': configs.PREDICT_LABELS[class_id]}
+            'class_id': _labels.index(class_name),
+            'class_name': class_name,
+            'object_name': object_name
+        }
 
     def predict(self,
                 image,

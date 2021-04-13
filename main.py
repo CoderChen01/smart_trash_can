@@ -1,8 +1,10 @@
+import json
 import logging
 
 import configs
 from cans import BaseSamartCan
 from serial_controlers import BaseSerialControler
+import paho.mqtt.client as mqtt
 
 
 logger = logging.getLogger(configs.LOGGER_NAME)
@@ -25,13 +27,24 @@ logger.addHandler(ch)
 serial_controler = BaseSerialControler('/dev/ttyUSB0', 115200, timeout=0.5, logger=logger)
 
 class MySmartCan(BaseSamartCan):
+    def __init__(self,
+                 all_time,
+                 detected_num=5,
+                 infer='paddlelite_infer'):
+        super(MySmartCan, self).__init__(all_time, detected_num, infer)
+        self.mqtt_client = mqtt.Client()
+        self.mqtt_client.connect(configs.MQTT_SERVER)
+        self.mqtt_client.loop_start()
+
     def to_switch(self, class_id):
         serial_controler.send_data(class_id)
         retval = serial_controler.read_line_json()
-        if not retval:
-            return False
         return retval
 
+    def handle_result(self):
+        for result in self._handler():
+            self.mqtt_client.publish(json.dumps(result))
 
-can = MySmartCan(10, detected_num=30, inspection_interval=0)
+
+can = MySmartCan(999, detected_num=30)
 can.run()
