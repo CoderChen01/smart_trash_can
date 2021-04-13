@@ -5,6 +5,7 @@ import importlib
 import cv2
 
 import configs
+from good_videocapture import GoodVideoCpature
 
 
 logger = logging.getLogger(configs.LOGGER_NAME)
@@ -33,10 +34,12 @@ class BaseSamartCan:
 
     def _provider(self):  # get pictures in real time
         start_time = time.time()
-        capture = cv2.VideoCapture(configs.CAMERA_FILE)
-        if not capture.isOpened():
+        capture = GoodVideoCpature.create(configs.CAMERA_FILE)
+
+        if not capture.is_started():
             logger.error('BaseSamartCan._provider: %s',
                          'Can\'t turn on the camera')
+            capture.stop_read()
             capture.release()
             return
         logger.info('BaseSmartCan._provider: %s', 'start get iamges...')
@@ -44,7 +47,7 @@ class BaseSamartCan:
             if time.time() - start_time >= self.all_time:
                 capture.release()
                 return
-            retval, frame = capture.read()
+            retval, frame = capture.read_latest_frame()
             if not retval:
                 logger.warning('BaseSamartCan._provider: %s',
                                'No frame was read')

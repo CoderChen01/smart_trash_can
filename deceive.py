@@ -1,3 +1,5 @@
+import time
+
 import configs
 from cans import BaseSamartCan
 
@@ -11,7 +13,7 @@ class DeceiveSmartCan(BaseSamartCan):
         # When a certain category is detected 'detected_num' times,
         # the final judgment is that category
         self.detected_num = detected_num
-        self.deceive_list = [0, 0, 2, 3, 1, 2]
+        self.deceive_list = [1,3,3,2]
 
     def run(self):  # run trash can
         self._handle_result()
@@ -22,6 +24,7 @@ class DeceiveSmartCan(BaseSamartCan):
 
     def _handler(self):
         for class_id in self.deceive_list:
+            time.sleep(8)
             handle_result = {}
             text = configs.PREDICT_LABELS[class_id]
             retval = self.to_switch(str(class_id).encode('utf8'))

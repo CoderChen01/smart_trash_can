@@ -8,11 +8,13 @@ PADDLELITE_MODEL = os.path.join(BASE_DIR, 'model.nb')
 IMAGE_FONT = os.path.join(BASE_DIR, 'arialuni.ttf')
 INFER_THRESHOLD = 0.8
 PREDICT_LABELS = [
-    '其他垃圾',
-    '厨余垃圾',
-    '可回收垃圾',
-    '有害垃圾',
-    '未检测到垃圾'
+    "无垃圾",
+    "有害垃圾/电池",
+    "可回收垃圾/易拉罐",
+    "可回收垃圾/矿泉水瓶",
+    "厨余垃圾/水果、蔬菜",
+    "其他垃圾/烟蒂",
+    "其他垃圾/砖瓦陶瓷"
 ]
 NO_TRASH_ID = 4
 LOGGER_NAME = 'smartcan'
