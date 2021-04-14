@@ -73,7 +73,6 @@ class BaseSamartCan:
             logger.info('SmartCan._handler: %s', 'class is ' + class_info['object_name'])
             retval = self.to_switch(class_id.encode('utf8'))
             handle_result['status'] = True
-            handle_result['image'] = cv2base64(frame)
             handle_result['message'] = {}
             handle_result['message']['num'] = _id
             handle_result['message']['class'] = class_info['object_name']
