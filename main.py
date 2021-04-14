@@ -47,5 +47,5 @@ class MySmartCan(BaseSamartCan):
             self.mqtt_client.publish(configs.MQTT_PATH, json.dumps(result))
 
 
-can = MySmartCan(999, detected_num=10)
+can = MySmartCan(999, detected_num=5)
 can.run()
