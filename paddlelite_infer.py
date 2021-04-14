@@ -35,15 +35,10 @@ class Detector:
             '厨余垃圾',
             '其他垃圾'
         ]
-        class_id = int(np.where(raw_result == np.max(raw_result))[0])
-        if raw_result[class_id] < threshold:
-            return {'class_id': 0, 'text': configs.PREDICT_LABELS[0]}
-        class_name, object_name = configs.PREDICT_LABELS[class_id].split('/')
-        return {
-            'class_id': _labels.index(class_name),
-            'class_name': class_name,
-            'object_name': object_name
-        }
+        _id = int(np.where(raw_result == np.max(raw_result))[0])
+        if raw_result[_id] < threshold:
+            return 0
+        return _id
 
     def predict(self,
                 image,

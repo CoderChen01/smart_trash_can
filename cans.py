@@ -2,9 +2,8 @@ import time
 import logging
 import importlib
 
-import cv2
-
 import configs
+from tools import cv2base64, id2data
 from good_videocapture import GoodVideoCpature
 
 
@@ -24,7 +23,7 @@ class BaseSamartCan:
         self.predictor = self._get_predictor()
 
     def run(self):  # run trash can
-        self._handle_result()
+        self.handle_result()
 
     def handle_result(self):
         for result in self._handler():
@@ -33,7 +32,7 @@ class BaseSamartCan:
     def _provider(self):  # get pictures in real time
         start_time = time.time()
         capture = GoodVideoCpature.create(configs.CAMERA_FILE)
-
+        capture.start_read()
         if not capture.is_started():
             logger.error('BaseSamartCan._provider: %s',
                          'Can\'t turn on the camera')
@@ -56,30 +55,29 @@ class BaseSamartCan:
         # initial
         class_list_len = len(configs.PREDICT_LABELS)
         class_num = [0] * class_list_len
-        start_time = time.time()
         logger.info('SmartCan._handler: %s', 'start handling images...')
         for frame in self._provider():
             # predict image
-            result = self.predictor.predict(frame, configs.INFER_THRESHOLD)
-            class_id = result['class_id']
-            class_name = result['class_name']
+            _id = self.predictor.predict(frame, configs.INFER_THRESHOLD)
             # handle prediction result
             handle_result = {}
-            class_num[result['class_id']] += 1
+            class_num[_id] += 1
             max_num = max(class_num)
             if max_num < self.detected_num:
                 continue
-            class_id = str(class_num.index(max_num))
-            logger.info('SmartCan._handler: %s', 'class is ' + class_id)
+            _id = class_num.index(max_num)
+            if not _id:
+                continue
+            class_info = id2data(_id)
+            class_id = class_info['class_id']
+            logger.info('SmartCan._handler: %s', 'class is ' + class_info['object_name'])
             retval = self.to_switch(class_id.encode('utf8'))
             handle_result['status'] = True
-            handle_result['image'] = frame
+            handle_result['image'] = cv2base64(frame)
             handle_result['message'] = {}
-            handle_result['message']['num'] = class_id
-            handle_result['message']['class'] = class_name
-            handle_result['message']['all_count'] = retval['all_count']
-            handle_result['message']['is_ok'] = 'ok'
-            handle_result['is_full'] = retval['is_full']
+            handle_result['message']['num'] = _id
+            handle_result['message']['class'] = class_info['object_name']
+            handle_result['distance'] = retval['id_distance']
             class_num = [0] * class_list_len
             yield handle_result
 

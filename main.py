@@ -33,7 +33,7 @@ class MySmartCan(BaseSamartCan):
                  infer='paddlelite_infer'):
         super(MySmartCan, self).__init__(all_time, detected_num, infer)
         self.mqtt_client = mqtt.Client()
-        self.mqtt_client.connect(configs.MQTT_SERVER)
+        self.mqtt_client.connect(configs.MQTT_SERVER, configs.MQTT_PORT, 60)
         self.mqtt_client.loop_start()
 
     def to_switch(self, class_id):
@@ -43,8 +43,9 @@ class MySmartCan(BaseSamartCan):
 
     def handle_result(self):
         for result in self._handler():
-            self.mqtt_client.publish(configs.MQTT_PATH,json.dumps(result))
+            print(result)
+            self.mqtt_client.publish(configs.MQTT_PATH, json.dumps(result))
 
 
-can = MySmartCan(999, detected_num=30)
+can = MySmartCan(999, detected_num=10)
 can.run()
