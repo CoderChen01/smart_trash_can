@@ -21,8 +21,12 @@ class BaseSerialControler:
 
     def read_line_json(self):
         data = self.read_line()
-        while not data:
+        start_time = time.time()
+        while not data \
+              and not time.time() - start_time > 3:
             data = self.read_line()
+        if not data:
+            return {'id_distance': '999'}
         return json.loads(data)
 
     def send_data(self, data):
